@@ -57,7 +57,7 @@ exports.testCmd = (rl, id) => {
     } else {
         try {
             const quiz = model.getByIndex(id);
-            rl.question(colorize(`${quiz.question}: `, 'red'), answer =>{
+            rl.question(colorize(`${quiz.question}: `, 'red'), answer => {
                 if (answer === quiz.answer){
                     biglog("Correcta", "green");
                 } else {
@@ -73,8 +73,41 @@ exports.testCmd = (rl, id) => {
     }
 };
 exports.playCmd = rl => {
-    log("   p|play - Jugar a preguntar aleatoriamente todos los quizzes.", "red");
-    rl.prompt();
+
+    let score = 0;
+    let toBeResolved = [];
+    for (let i = 0; i < model.count(); i++){
+        toBeResolved[i] = i;
+    }
+    const playOne = () => {
+        if (toBeResolved.length === 0) {
+            log(`No hay nada más que preguntar.`);
+            biglog(`${score}`, "magenta");
+            rl.prompt();
+        } else {
+            try {
+                let id = Math.floor(toBeResolved.length * Math.random());
+                let quiz = model.getByIndex(toBeResolved[id]);
+                rl.question(colorize(`${quiz.question}: `, 'red'), answer => {
+                    if (answer === quiz.answer) {
+                        score++;
+                        toBeResolved.splice(id, 1);
+                        log(`CORRECTO - LLeva ${score} aciertos.`);
+                        playOne();
+                    } else {
+                        log(`INCORRECTO.`);
+                        log(`Fin del examen. Aciertos:`);
+                        biglog(`${score}`, 'magenta');
+                        rl.prompt();
+                    }
+                });
+            } catch (error) {
+                errorlog(error.message);
+                rl.prompt();
+            }
+        }
+    };
+    playOne();
 };
 exports.deleteCmd = (rl, id) => {
 
@@ -120,3 +153,7 @@ exports.creditsCmd = rl => {
     log("Rodrigo Martín Martín", "green");
     rl.prompt();
 };
+
+//log(`No hay nada más que preguntar.`);
+//log(`Fin del examen. Aciertos:`);
+//biglog(`${score}`, 'magenta');
