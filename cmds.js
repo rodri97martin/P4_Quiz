@@ -59,8 +59,10 @@ exports.testCmd = (rl, id) => {
             const quiz = model.getByIndex(id);
             rl.question(colorize(`${quiz.question}: `, 'red'), answer => {
                 if (answer === quiz.answer){
+                    log(`Su respuesta es correcta.`);
                     biglog("Correcta", "green");
                 } else {
+                    log(`Su respuesta es incorrecta.`);
                     biglog("Incorrecta", "red");
                 }
                 rl.prompt();
