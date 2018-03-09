@@ -137,15 +137,15 @@ exports.playCmd = rl => {
 
     let toBePlayed = [];
 
-
-
     const playOne = () => {
 
         return Promise.resolve()
             .then(() => {
 
             if (toBePlayed.length <= 0) {
-                console.log("SACABO");
+                log("No hay nada más que preguntar. ");
+                log(`Fin del juego. Aciertos: ${score}`);
+                biglog(`${score}`, "magenta");
                 return;
             }
 
@@ -153,14 +153,16 @@ exports.playCmd = rl => {
             let quiz = toBePlayed[pos];
             toBePlayed.splice(pos, 1);
 
-            makeQuestion(rl, quiz.question)
+            makeQuestion(rl, `${quiz.question}: `)
                 .then(answer => {
                     if (answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim()) {
                         score++;
-                        console.log("animo");
+                        log(`CORRECTO - Lleva ${score} aciertos`);
                         return playOne();
                     } else {
-                        console.log("KK");
+                        log("INCORRECTO");
+                        log(`Fin del juego. Aciertos: ${score}`);
+                        biglog(`${score}`, "magenta");
                     }
                 })
             })
@@ -177,7 +179,6 @@ exports.playCmd = rl => {
             console.log("Error: "+ e);
         })
         .then(() => {
-            console.log(score);
             rl.prompt();
         })
 
