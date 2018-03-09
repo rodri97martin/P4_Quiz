@@ -32,16 +32,16 @@ const validateId = id => {
     });
 };
 
-exports.quitCmd = rl => {
-    rl.close();
-};
-
 const makeQuestion = (rl, text) => {
     return new Sequelize.Promise((resolve, reject) => {
         rl.question(colorize(text, 'red'), answer => {
             resolve(answer.trim());
         });
     });
+};
+
+exports.quitCmd = rl => {
+    rl.close();
 };
 
 exports.addCmd = rl => {
@@ -101,7 +101,35 @@ exports.showCmd = (rl, id) => {
 };
 
 exports.testCmd = (rl, id) => {
+    validateId(id)
+        .then(id => models.quiz.findById(id))
+        .then(quiz => {
+            if (!quiz) {
+                throw new Error(`No existe un quiz asociado al id=${id}.`);
+            }
 
+            return makeQuestion(rl, `${quiz.question}: `)
+                .then(a => {
+                    if(a.toLowerCase().trim() === quiz.answer.toLowerCase().trim()) {
+                        log(`Su respuesta es correcta.`);
+                        biglog("Correcta", "green");
+                    } else {
+                        log(`Su respuesta es incorrecta.`);
+                        biglog("Incorrecta", "red");
+                    }
+                    return quiz;
+                });
+        })
+        .catch(Sequelize.ValidationError, error => {
+            errorlog('El quiz es erróneo:');
+            error.errors.forEach(({message}) => errorlog(message));
+        })
+        .catch(error => {
+            errorlog(error.message);
+        })
+        .then(() => {
+            rl.prompt();
+        });
 };
 exports.playCmd = rl => {
 
