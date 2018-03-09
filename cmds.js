@@ -101,65 +101,58 @@ exports.showCmd = (rl, id) => {
 };
 
 exports.testCmd = (rl, id) => {
-    if (typeof id === "undefined") {
-        errorlog(`Falta el parámetro id.`);
-        rl.prompt();
-    } else {
-        try {
-            const quiz = model.getByIndex(id);
-            rl.question(colorize(`${quiz.question}: `, 'red'), answer => {
-                if (answer.trim() === quiz.answer){
-                    log(`Su respuesta es correcta.`);
-                    biglog("Correcta", "green");
-                } else {
-                    log(`Su respuesta es incorrecta.`);
-                    biglog("Incorrecta", "red");
-                }
-                rl.prompt();
-            });
 
-        } catch (error) {
-            errorlog(error.message);
-            rl.prompt();
-        }
-    }
 };
 exports.playCmd = rl => {
 
     let score = 0;
-    let toBeResolved = [];
-    for (let i = 0; i < model.count(); i++){
-        toBeResolved[i] = i;
-    }
+
+    let toBePlayed = [];
+
+
+
     const playOne = () => {
-        if (toBeResolved.length === 0) {
-            log(`No hay nada más que preguntar.`);
-            biglog(`${score}`, "magenta");
-            rl.prompt();
-        } else {
-            try {
-                let id = Math.floor(toBeResolved.length * Math.random());
-                let quiz = model.getByIndex(toBeResolved[id]);
-                rl.question(colorize(`${quiz.question}: `, 'red'), answer => {
-                    if (answer.trim() === quiz.answer) {
-                        score++;
-                        toBeResolved.splice(id, 1);
-                        log(`CORRECTO - LLeva ${score} aciertos.`);
-                        playOne();
-                    } else {
-                        log(`INCORRECTO.`);
-                        log(`Fin del examen. Aciertos:`);
-                        biglog(`${score}`, 'magenta');
-                        rl.prompt();
-                    }
-                });
-            } catch (error) {
-                errorlog(error.message);
-                rl.prompt();
+
+        return Promise.resolve()
+            .then(() => {
+
+            if (toBePlayed.length <= 0) {
+                console.log("SACABO");
+                return;
             }
-        }
-    };
-    playOne();
+
+            let pos = Math.floor(Math.random() * toBePlayed.length);
+            let quiz = toBePlayed[pos];
+            toBePlayed.splice(pos, 1);
+
+            makeQuestion(rl, quiz.question)
+                .then(answer => {
+                    if (answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim()) {
+                        score++;
+                        console.log("animo");
+                        return playOne();
+                    } else {
+                        console.log("KK");
+                    }
+                })
+            })
+    }
+
+    models.quiz.findAll({raw: true})
+        .then(quizzes => {
+            toBePlayed = quizzes;
+        })
+        .then(() => {
+            return playOne();
+        })
+        .catch(e => {
+            console.log("Error: "+ e);
+        })
+        .then(() => {
+            console.log(score);
+            rl.prompt();
+        })
+
 };
 exports.deleteCmd = (rl, id) => {
     validateId(id)
@@ -174,36 +167,10 @@ exports.deleteCmd = (rl, id) => {
 
 exports.editCmd = (rl, id) => {
 
-    if (typeof id === "undefined") {
-        errorlog(`Falta el parámetro id.`);
-        rl.prompt();
-    } else {
-        try {
-            const quiz = model.getByIndex(id);
-            process.stdout.isTTY && setTimeout(() => {rl.write(quiz.question)}, 0);
 
-            rl.question(colorize('Introduzca una pregunta: ', 'red'), question => {
-
-                process.stdout.isTTY && setTimeout(() => {rl.write(quiz.answer)}, 0);
-
-                rl.question(colorize('Introduzca la respuesta: ', 'red'), answer => {
-                    model.update(id, question, answer);
-                    log(`   Se ha cambiado el quiz ${colorize(id, 'magenta')} por: ${question} ${colorize('=>', 'magenta')} ${answer}`);
-                    rl.prompt();
-                });
-            });
-        } catch (error) {
-            errorlog(error.message);
-            rl.prompt();
-        }
-    }
 };
 exports.creditsCmd = rl => {
     log("Autor de la práctica:");
     log("Rodrigo Martín Martín", "green");
     rl.prompt();
 };
-
-//log(`No hay nada más que preguntar.`);
-//log(`Fin del examen. Aciertos:`);
-//biglog(`${score}`, 'magenta');
