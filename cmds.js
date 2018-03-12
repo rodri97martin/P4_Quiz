@@ -131,6 +131,7 @@ exports.testCmd = (rl, id) => {
             rl.prompt();
         });
 };
+
 exports.playCmd = rl => {
 
     let score = 0;
@@ -146,6 +147,7 @@ exports.playCmd = rl => {
                 log("No hay nada más que preguntar. ");
                 log(`Fin del juego. Aciertos: ${score}`);
                 biglog(`${score}`, "magenta");
+                rl.prompt();
                 return;
             }
 
@@ -163,6 +165,7 @@ exports.playCmd = rl => {
                         log("INCORRECTO");
                         log(`Fin del juego. Aciertos: ${score}`);
                         biglog(`${score}`, "magenta");
+                        rl.prompt();
                     }
                 })
             })
